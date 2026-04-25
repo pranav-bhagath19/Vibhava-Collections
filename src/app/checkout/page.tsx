@@ -64,11 +64,13 @@ export default function CheckoutPage() {
     setIsLoading(true);
     try {
       const orderId = `VB-${Math.floor(Math.random() * 90000) + 10000}`;
+      const now = new Date().toISOString();
+      
       const orderData = {
         orderId,
         userId: user.id,
         userName: `${formData.firstName} ${formData.lastName}`,
-        email: formData.email,
+        email: formData.email || user.email,
         phone: formData.phone,
         address: `${formData.address}, ${formData.city} - ${formData.pin}`,
         items: cart.map(item => ({
@@ -80,7 +82,15 @@ export default function CheckoutPage() {
         })),
         total: cartTotal,
         status: 'placed',
-        createdAt: new Date().toISOString() // Using string for simple cross-reference, but real-time listeners work with it
+        createdAt: now,
+        paymentMethod: formData.paymentMethod,
+        trackingTimeline: [
+          {
+            status: 'placed',
+            timestamp: now,
+            message: 'Order placed successfully. Thank you for choosing Vibhava!'
+          }
+        ]
       };
 
       // 1. Save to global orders collection

@@ -8,16 +8,9 @@ import { useRouter } from 'next/navigation';
 import { User, Package, Heart, LogOut, ChevronRight, Loader2 } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import { db } from '@/lib/firebase';
+import { Order } from '@/types';
+import TrackingTimeline from '@/components/orders/TrackingTimeline';
 import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
-
-interface Order {
-  id?: string;
-  orderId: string;
-  total: number;
-  status: string;
-  createdAt: string;
-  items: any[];
-}
 
 export default function ProfilePage() {
   const { user, logout, isLoading: isAuthLoading } = useAuth();
@@ -129,30 +122,57 @@ export default function ProfilePage() {
               ) : orders.length > 0 ? (
                 <div className="space-y-6">
                   {orders.map(order => (
-                    <div key={order.orderId} className="border border-gray-100 rounded-xl p-6 flex flex-col md:flex-row justify-between items-center gap-6 group hover:border-primary/30 transition-all hover:shadow-md">
-                      <div className="flex gap-6 items-center">
-                        <div className="w-16 h-20 bg-gray-50 rounded-lg shrink-0 overflow-hidden shadow-sm">
-                          <img src={order.items[0]?.image || "/assets/images/vibhava_hero_saree.png"} className="w-full h-full object-cover" />
+                    <Link 
+                      href={`/orders/${order.orderId}`}
+                      key={order.orderId} 
+                      className="block border border-gray-100 rounded-xl p-6 group hover:border-primary/30 transition-all hover:shadow-md bg-white"
+                    >
+                      <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+                        <div className="flex gap-6 items-center w-full md:w-auto">
+                          <div className="w-16 h-20 bg-gray-50 rounded-lg shrink-0 overflow-hidden shadow-sm">
+                            <img src={order.items[0]?.image || "/assets/images/vibhava_hero_saree.png"} className="w-full h-full object-cover" />
+                          </div>
+                          <div>
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Order #{order.orderId}</p>
+                            <h4 className="font-bold text-gray-800 italic">{order.items[0]?.name || 'Heritage Piece'} {order.items.length > 1 ? `+ ${order.items.length - 1} more` : ''}</h4>
+                            <p className="text-xs text-gray-500 font-light mt-1">Placed on {new Date(order.createdAt).toLocaleDateString()}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Order #{order.orderId}</p>
-                          <h4 className="font-bold text-gray-800 italic">{order.items[0]?.name || 'Heritage Piece'} {order.items.length > 1 ? `+ ${order.items.length - 1} more` : ''}</h4>
-                          <p className="text-xs text-gray-500 font-light mt-1">Placed on {new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                        
+                        <div className="flex items-center justify-between w-full md:w-auto gap-8">
+                          <div className="text-right">
+                            <p className="text-xs text-gray-400 uppercase tracking-widest mb-1">Total</p>
+                            <p className="font-bold text-primary">₹{order.total}</p>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className={`px-4 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-[0.2em] ${
+                              order.status === 'delivered' ? 'bg-green-100 text-green-700' : 
+                              order.status === 'cancelled' ? 'bg-red-50 text-red-500' :
+                              'bg-primary/10 text-primary'
+                            }`}>
+                              {order.status.replace(/_/g, ' ')}
+                            </span>
+                            <ChevronRight size={16} className="text-gray-300 group-hover:translate-x-1 transition-transform" />
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-8">
-                        <div className="text-right">
-                          <p className="text-xs text-gray-400 uppercase tracking-widest mb-1">Total</p>
-                          <p className="font-bold text-primary">₹{order.total}</p>
+
+                      {/* Mini Timeline Summary */}
+                      {order.status !== 'cancelled' && order.status !== 'delivered' && (
+                        <div className="mt-6 pt-6 border-t border-gray-50">
+                          <div className="flex justify-between items-center mb-2">
+                            <p className="text-[9px] uppercase tracking-widest font-bold text-gray-400">Current Progress</p>
+                            <p className="text-[9px] font-bold text-primary italic">Tracking details available in view details</p>
+                          </div>
+                          <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden">
+                            <div 
+                              className="h-full bg-primary transition-all duration-1000" 
+                              style={{ width: `${(['placed', 'confirmed', 'packed', 'shipped', 'out_for_delivery', 'delivered'].indexOf(order.status) / 5) * 100}%` }}
+                            />
+                          </div>
                         </div>
-                        <span className={`px-4 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-[0.2em] ${
-                          order.status === 'delivered' ? 'bg-green-100 text-green-700' : 'bg-primary/10 text-primary'
-                        }`}>
-                          {order.status}
-                        </span>
-                        <button className="text-primary font-bold text-[10px] uppercase tracking-widest border-b border-primary/20 hover:border-primary pb-1 transition-all">Details</button>
-                      </div>
-                    </div>
+                      )}
+                    </Link>
                   ))}
                 </div>
               ) : (
