@@ -34,6 +34,9 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (user) {
+      console.log(`🔍 Fetching orders for: ${user.email} (ID: ${user.id})`);
+      
+      // We use email as the primary key for "Grouping by Gmail"
       const q = query(
         collection(db, 'orders'),
         where('email', '==', user.email),
@@ -41,6 +44,7 @@ export default function ProfilePage() {
       );
       
       const unsubscribe = onSnapshot(q, (snapshot) => {
+        console.log(`📦 Orders found: ${snapshot.size}`);
         const ordersData = snapshot.docs.map(doc => {
           const data = doc.data() as Order;
           return {
@@ -51,7 +55,10 @@ export default function ProfilePage() {
         setOrders(ordersData);
         setIsLoadingOrders(false);
       }, (error) => {
-        console.error('Order listener error:', error);
+        console.error('❌ Order listener error:', error);
+        if (error.message.includes('index')) {
+          console.warn('⚠️ MISSING INDEX: You need to create a Firestore index for "orders" (email: ASC, createdAt: DESC). Check the link in the error message above.');
+        }
         setIsLoadingOrders(false);
       });
 
