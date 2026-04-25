@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { useAppContext } from '@/context/AppContext';
@@ -12,7 +12,8 @@ import { doc, setDoc, arrayUnion } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
 
 export default function CheckoutPage() {
-  const { cart, cartTotal, showToast } = useAppContext();
+  const { user } = useAuth();
+  const { cart, cartTotal, showToast, clearCart } = useAppContext();
   const [isOrdered, setIsOrdered] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -52,7 +53,6 @@ export default function CheckoutPage() {
 
   const prevStep = () => setCurrentStep(prev => prev - 1);
 
-  const { clearCart } = useAppContext();
   const handleOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     
