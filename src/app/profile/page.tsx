@@ -36,7 +36,7 @@ export default function ProfilePage() {
     if (user) {
       const q = query(
         collection(db, 'orders'),
-        where('userId', '==', user.id),
+        where('email', '==', user.email),
         orderBy('createdAt', 'desc')
       );
       
