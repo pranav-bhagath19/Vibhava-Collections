@@ -3,6 +3,13 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
+// Diagnostic check
+if (!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
+  console.error("❌ Firebase Project ID is missing from environment variables!");
+} else {
+  console.log("📡 Initializing Firebase for project:", process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID);
+}
+
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,

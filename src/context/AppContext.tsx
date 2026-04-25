@@ -68,7 +68,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const unsubscribe = onSnapshot(
       collection(db, 'products'), 
       (snapshot) => {
+        console.log(`📦 Firestore Snapshot received. Count: ${snapshot.size}`);
         if (snapshot.empty) {
+          console.warn("⚠️ Products collection is EMPTY in Firestore. Falling back to mock data.");
           // Fallback to mock data if DB is empty (safe production fallback)
           import('@/data/mockData').then(({ products: mockProducts }) => {
             setProducts(mockProducts);
@@ -80,6 +82,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           ...doc.data(),
           id: doc.id
         })) as Product[];
+        console.log("✅ Products synced successfully from Firestore.");
         setProducts(productList);
         setIsLoadingProducts(false);
       },

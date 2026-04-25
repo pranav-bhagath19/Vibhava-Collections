@@ -36,33 +36,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Sync or create user in Firestore
   const syncUserToFirestore = async (firebaseUser: any) => {
-    const userRef = doc(db, 'users', firebaseUser.uid);
-    const userDoc = await getDoc(userRef);
-    
-    const userData = {
-      uid: firebaseUser.uid,
-      name: firebaseUser.displayName || 'Guest User',
-      email: firebaseUser.email,
-      photoURL: firebaseUser.photoURL || '',
-      lastLogin: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    };
+    console.log("👤 Syncing user to Firestore:", firebaseUser.uid);
+    try {
+      const userRef = doc(db, 'users', firebaseUser.uid);
+      const userDoc = await getDoc(userRef);
+      
+      const userData = {
+        uid: firebaseUser.uid,
+        name: firebaseUser.displayName || 'Guest User',
+        email: firebaseUser.email,
+        photoURL: firebaseUser.photoURL || '',
+        lastLogin: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      };
 
-    if (!userDoc.exists()) {
-      await setDoc(userRef, {
-        ...userData,
-        createdAt: serverTimestamp(),
+      if (!userDoc.exists()) {
+        console.log("📝 Creating new user document...");
+        await setDoc(userRef, {
+          ...userData,
+          createdAt: serverTimestamp(),
+        });
+      } else {
+        console.log("🔄 Updating existing user document...");
+        await setDoc(userRef, userData, { merge: true });
+      }
+
+      setUser({
+        id: firebaseUser.uid,
+        name: userData.name,
+        email: userData.email || '',
+        photoURL: userData.photoURL,
       });
-    } else {
-      await setDoc(userRef, userData, { merge: true });
+      console.log("✅ User sync complete.");
+    } catch (error) {
+      console.error("❌ User sync failed:", error);
+      // Still set the user state so the UI isn't blocked, 
+      // even if Firestore sync fails
+      setUser({
+        id: firebaseUser.uid,
+        name: firebaseUser.displayName || 'Guest User',
+        email: firebaseUser.email || '',
+        photoURL: firebaseUser.photoURL || '',
+      });
     }
-
-    setUser({
-      id: firebaseUser.uid,
-      name: userData.name,
-      email: userData.email || '',
-      photoURL: userData.photoURL,
-    });
   };
 
   useEffect(() => {
