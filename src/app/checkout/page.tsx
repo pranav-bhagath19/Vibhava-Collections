@@ -17,6 +17,7 @@ export default function CheckoutPage() {
   const [isOrdered, setIsOrdered] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [saveAddress, setSaveAddress] = useState(true);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -27,6 +28,20 @@ export default function CheckoutPage() {
     phone: '',
     paymentMethod: 'cod'
   });
+
+  const selectSavedAddress = (addr: any) => {
+    setFormData({
+      firstName: addr.firstName,
+      lastName: addr.lastName,
+      email: addr.email,
+      address: addr.address,
+      city: addr.city,
+      pin: addr.pin,
+      phone: addr.phone,
+      paymentMethod: formData.paymentMethod
+    });
+    showToast('Address applied', 'success');
+  };
 
   // Sync email when user changes
   useEffect(() => {
@@ -96,8 +111,23 @@ export default function CheckoutPage() {
       // 1. Save to global orders collection
       await setDoc(doc(db, 'orders', orderId), orderData);
 
-      // 2. Clear cart in Firestore
+      // 2. Clear cart
       await clearCart();
+
+      // 3. Save address if requested
+      if (user && saveAddress) {
+        const userRef = doc(db, 'users', user.id);
+        const newAddress = {
+          id: `ADDR-${Date.now()}`,
+          ...formData,
+          isDefault: false
+        };
+        
+        await setDoc(userRef, {
+          savedAddresses: arrayUnion(newAddress)
+        }, { merge: true });
+        console.log("📍 Address saved to profile.");
+      }
 
       setIsOrdered(true);
       showToast('Order placed successfully!', 'success');
@@ -186,7 +216,33 @@ export default function CheckoutPage() {
                 <div className="flex-1">
                   {currentStep === 1 && (
                     <div className="space-y-8 animate-fade-in">
-                      <h2 className="text-xl font-bold text-luxury italic">Shipping Details</h2>
+                      <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-xl font-bold text-luxury italic">Shipping Details</h2>
+                        {user && user.savedAddresses && user.savedAddresses.length > 0 && (
+                          <div className="relative group">
+                            <button className="text-[10px] font-bold uppercase tracking-widest text-primary border border-primary/20 px-3 py-1.5 rounded-md hover:bg-primary hover:text-white transition-all">
+                              Use Saved Address
+                            </button>
+                            <div className="absolute right-0 top-full mt-2 w-72 bg-white shadow-2xl rounded-xl border border-gray-100 hidden group-hover:block z-50 p-2 overflow-hidden animate-fade-in">
+                              <p className="p-3 text-[9px] uppercase tracking-widest font-bold text-gray-400 border-b border-gray-50">Select an address</p>
+                              <div className="max-h-60 overflow-y-auto">
+                                {user.savedAddresses.map((addr: any) => (
+                                  <button 
+                                    key={addr.id}
+                                    onClick={() => selectSavedAddress(addr)}
+                                    className="w-full text-left p-4 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0"
+                                  >
+                                    <p className="text-xs font-bold text-luxury">{addr.firstName} {addr.lastName}</p>
+                                    <p className="text-[10px] text-gray-500 mt-1 line-clamp-1">{addr.address}</p>
+                                    <p className="text-[10px] text-gray-400">{addr.city}, {addr.pin}</p>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
                       <div className="grid grid-cols-2 gap-6">
                         <div className="space-y-2">
                           <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400 ml-1">First Name *</label>
@@ -219,6 +275,22 @@ export default function CheckoutPage() {
                         <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400 ml-1">Phone Number *</label>
                         <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} className="w-full p-5 bg-white border border-gray-100 rounded-lg outline-none focus:border-secondary transition-all shadow-sm text-sm" placeholder="+91 98765 43210" />
                       </div>
+
+                      {user && (
+                        <label className="flex items-center gap-3 cursor-pointer group pt-2">
+                          <div className="relative w-5 h-5">
+                            <input 
+                              type="checkbox" 
+                              checked={saveAddress}
+                              onChange={(e) => setSaveAddress(e.target.checked)}
+                              className="peer hidden" 
+                            />
+                            <div className="w-full h-full border-2 border-gray-100 rounded peer-checked:bg-primary peer-checked:border-primary transition-all" />
+                            <CheckCircle2 className="absolute top-0 left-0 text-white w-full h-full opacity-0 peer-checked:opacity-100 transition-opacity p-0.5" />
+                          </div>
+                          <span className="text-xs text-gray-500 font-medium group-hover:text-luxury transition-colors">Save this address for future orders</span>
+                        </label>
+                      )}
                     </div>
                   )}
 

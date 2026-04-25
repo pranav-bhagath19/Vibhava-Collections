@@ -44,10 +44,23 @@ export interface Order {
   trackingTimeline: TrackingEvent[];
 }
 
+export interface Address {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  address: string;
+  city: string;
+  pin: string;
+  phone: string;
+  isDefault?: boolean;
+}
+
 export interface User {
   id: string;
   name: string;
   email: string;
   photoURL?: string;
   createdAt?: string;
+  savedAddresses?: Address[];
 }

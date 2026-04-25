@@ -5,7 +5,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { User, Package, Heart, LogOut, ChevronRight, Loader2 } from 'lucide-react';
+import { User, Package, Heart, LogOut, ChevronRight, Loader2, MapPin, Trash2 } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import { db } from '@/lib/firebase';
 import { Order } from '@/types';
@@ -18,6 +18,24 @@ export default function ProfilePage() {
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoadingOrders, setIsLoadingOrders] = useState(true);
+  const [activeTab, setActiveTab] = useState<'orders' | 'addresses'>('orders');
+
+  const deleteAddress = async (addressId: string) => {
+    if (!user) return;
+    try {
+      const { doc, setDoc } = await import('firebase/firestore');
+      const userRef = doc(db, 'users', user.id);
+      const updatedAddresses = (user.savedAddresses || []).filter(a => a.id !== addressId);
+      
+      await setDoc(userRef, {
+        savedAddresses: updatedAddresses
+      }, { merge: true });
+      
+      showToast('Address removed', 'success');
+    } catch (error) {
+      showToast('Failed to remove address', 'error');
+    }
+  };
 
   useEffect(() => {
     if (!isAuthLoading && !user) {
@@ -87,13 +105,28 @@ export default function ProfilePage() {
             </div>
 
             <nav className="bg-white rounded-xl shadow-luxury overflow-hidden border border-gray-50">
-              <button className="w-full flex items-center justify-between p-5 hover:bg-gray-50 transition-colors border-b border-gray-50 text-primary font-bold">
+              <button 
+                onClick={() => setActiveTab('orders')}
+                className={`w-full flex items-center justify-between p-5 hover:bg-gray-50 transition-colors border-b border-gray-50 ${activeTab === 'orders' ? 'text-primary font-bold bg-gray-50' : 'text-gray-500'}`}
+              >
                 <div className="flex items-center gap-3">
                   <Package size={18} />
                   <span className="text-xs uppercase tracking-widest">Order History</span>
                 </div>
-                <ChevronRight size={16} />
+                <ChevronRight size={16} className={activeTab === 'orders' ? 'opacity-100' : 'opacity-0'} />
               </button>
+              
+              <button 
+                onClick={() => setActiveTab('addresses')}
+                className={`w-full flex items-center justify-between p-5 hover:bg-gray-50 transition-colors border-b border-gray-50 ${activeTab === 'addresses' ? 'text-primary font-bold bg-gray-50' : 'text-gray-500'}`}
+              >
+                <div className="flex items-center gap-3">
+                  <MapPin size={18} />
+                  <span className="text-xs uppercase tracking-widest">Saved Addresses</span>
+                </div>
+                <ChevronRight size={16} className={activeTab === 'addresses' ? 'opacity-100' : 'opacity-0'} />
+              </button>
+
               <button onClick={() => router.push('/wishlist')} className="w-full flex items-center justify-between p-5 hover:bg-gray-50 transition-colors border-b border-gray-50">
                 <div className="flex items-center gap-3">
                   <Heart size={18} />
@@ -101,6 +134,7 @@ export default function ProfilePage() {
                 </div>
                 <ChevronRight size={16} />
               </button>
+              
               <button onClick={handleLogout} className="w-full flex items-center justify-between p-5 hover:bg-red-50 transition-colors text-red-500">
                 <div className="flex items-center gap-3">
                   <LogOut size={18} />
@@ -112,8 +146,9 @@ export default function ProfilePage() {
 
           {/* Main Content */}
           <div className="lg:col-span-3 space-y-8">
-            <section className="bg-white p-10 rounded-xl shadow-luxury border border-gray-50">
-              <h3 className="text-2xl font-bold text-luxury mb-10 italic">Recent Orders</h3>
+            {activeTab === 'orders' ? (
+              <section className="bg-white p-10 rounded-xl shadow-luxury border border-gray-50">
+                <h3 className="text-2xl font-bold text-luxury mb-10 italic">Recent Orders</h3>
               
               {isLoadingOrders ? (
                 <div className="py-20 flex justify-center">
@@ -179,33 +214,53 @@ export default function ProfilePage() {
                 <div className="text-center py-20 bg-cream/30 rounded-xl border border-dashed border-gray-200">
                   <Package className="mx-auto text-gray-300 mb-4" size={48} />
                   <p className="text-gray-400 italic">No orders found. Start your journey with us.</p>
-                  <button onClick={() => router.push('/shop')} className="btn-primary mt-8 py-4">Explore Collection</button>
+                  <button onClick={() => router.push('/shop')} className="btn-primary mt-8 py-4 px-10">Explore Collection</button>
                 </div>
               )}
             </section>
-
+          ) : (
             <section className="bg-white p-10 rounded-xl shadow-luxury border border-gray-50">
-              <h3 className="text-2xl font-bold text-luxury mb-10 italic">Account Settings</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="p-8 border border-gray-50 bg-cream/10 rounded-xl relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-secondary/5 rounded-full translate-x-12 -translate-y-12" />
-                  <h4 className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-4">Default Shipping</h4>
-                  <p className="font-bold text-gray-800 mb-2 italic">{user.name}</p>
-                  <p className="text-gray-500 text-xs font-light leading-relaxed">
-                    123 Heritage Lane, Silk Market<br />
-                    Kanchipuram, Tamil Nadu 631501<br />
-                    Phone: +91 98765 43210
-                  </p>
-                  <button className="mt-8 text-primary font-bold text-[10px] uppercase tracking-widest border-b border-primary/20 hover:border-primary pb-1 transition-all">Edit Address</button>
+              <h3 className="text-2xl font-bold text-luxury mb-10 italic">Saved Addresses</h3>
+              
+              {user.savedAddresses && user.savedAddresses.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {user.savedAddresses.map((addr) => (
+                    <div key={addr.id} className="p-8 border border-gray-50 bg-cream/10 rounded-xl relative overflow-hidden group hover:border-primary/30 transition-all">
+                      <div className="absolute top-0 right-0 w-24 h-24 bg-secondary/5 rounded-full translate-x-12 -translate-y-12" />
+                      
+                      <button 
+                        onClick={() => deleteAddress(addr.id)}
+                        className="absolute top-4 right-4 p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+
+                      <div className="flex items-center gap-2 mb-4">
+                        <MapPin size={14} className="text-primary" />
+                        <h4 className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Shipping Address</h4>
+                      </div>
+                      
+                      <p className="font-bold text-gray-800 mb-2 italic">{addr.firstName} {addr.lastName}</p>
+                      <p className="text-gray-500 text-xs font-light leading-relaxed">
+                        {addr.address}<br />
+                        {addr.city}, {addr.pin}<br />
+                        Phone: {addr.phone}
+                      </p>
+                      {addr.isDefault && (
+                        <span className="mt-6 inline-block text-[8px] uppercase tracking-widest font-bold bg-primary/10 text-primary px-3 py-1 rounded-full">Default Address</span>
+                      )}
+                    </div>
+                  ))}
                 </div>
-                
-                <div className="p-8 border border-gray-50 bg-cream/10 rounded-xl relative overflow-hidden">
-                   <h4 className="text-[10px] uppercase tracking-widest font-bold text-gray-400 mb-4">Security</h4>
-                   <p className="text-xs text-gray-500 font-light leading-relaxed mb-6">Manage your password and authentication preferences to keep your account secure.</p>
-                   <button className="text-primary font-bold text-[10px] uppercase tracking-widest border-b border-primary/20 hover:border-primary pb-1 transition-all">Change Password</button>
+              ) : (
+                <div className="text-center py-20 bg-cream/30 rounded-xl border border-dashed border-gray-200">
+                  <MapPin className="mx-auto text-gray-300 mb-4" size={48} />
+                  <p className="text-gray-400 italic">No saved addresses found. You can save an address during checkout.</p>
+                  <button onClick={() => router.push('/shop')} className="btn-primary mt-8 py-4 px-10">Start Shopping</button>
                 </div>
-              </div>
+              )}
             </section>
+          )}
           </div>
         </div>
       </div>

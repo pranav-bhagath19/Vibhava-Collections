@@ -66,6 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         name: userData.name,
         email: userData.email || '',
         photoURL: userData.photoURL,
+        savedAddresses: userDoc.exists() ? userDoc.data().savedAddresses || [] : [],
       });
       console.log("✅ User sync complete.");
     } catch (error) {
