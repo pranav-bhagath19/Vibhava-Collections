@@ -1,0 +1,21 @@
+{
+  "name": "Vibhava Collections",
+  "short_name": "Vibhava",
+  "description": "Premium Sarees & Dress Materials",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFDF5",
+  "theme_color": "#5D0E11",
+  "icons": [
+    {
+      "src": "/assets/images/vibhava_hero_saree.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/images/vibhava_hero_saree.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
