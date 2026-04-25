@@ -13,7 +13,7 @@ export default function SignupPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { signup, isLoading } = useAuth();
+  const { signup, loginWithGoogle, isLoading } = useAuth();
   const { showToast } = useAppContext();
   const router = useRouter();
 
@@ -96,6 +96,33 @@ export default function SignupPage() {
               Already have an account? <Link href="/login" className="text-primary font-bold hover:underline">Login</Link>
             </p>
           </div>
+
+          <div className="relative my-8">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-100"></div>
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-4 text-gray-400 tracking-widest">Or continue with</span>
+            </div>
+          </div>
+
+          <button 
+            type="button"
+            onClick={async () => {
+              try {
+                await loginWithGoogle();
+                showToast('Welcome to the Vibhava family!', 'success');
+                router.push('/profile');
+              } catch (error: any) {
+                showToast(error.message || 'Google signup failed', 'error');
+              }
+            }}
+            disabled={isLoading}
+            className="w-full border border-gray-200 py-4 font-bold uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 hover:bg-gray-50 transition-all disabled:opacity-70"
+          >
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/smartlock/google.svg" className="w-5 h-5" alt="Google" />
+            Google
+          </button>
         </div>
       </div>
       <Footer />

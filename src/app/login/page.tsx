@@ -12,7 +12,7 @@ import { Mail, Lock, Loader2, ArrowRight } from 'lucide-react';
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login, isLoading } = useAuth();
+  const { login, loginWithGoogle, isLoading } = useAuth();
   const { showToast } = useAppContext();
   const router = useRouter();
 
@@ -81,6 +81,33 @@ export default function LoginPage() {
               Don't have an account? <Link href="/signup" className="text-primary font-bold hover:underline">Create One</Link>
             </p>
           </div>
+
+          <div className="relative my-8">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-100"></div>
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-4 text-gray-400 tracking-widest">Or continue with</span>
+            </div>
+          </div>
+
+          <button 
+            type="button"
+            onClick={async () => {
+              try {
+                await loginWithGoogle();
+                showToast('Welcome to Vibhava!', 'success');
+                router.push('/profile');
+              } catch (error: any) {
+                showToast(error.message || 'Google login failed', 'error');
+              }
+            }}
+            disabled={isLoading}
+            className="w-full border border-gray-200 py-4 font-bold uppercase tracking-[0.2em] text-[10px] flex items-center justify-center gap-3 hover:bg-gray-50 transition-all disabled:opacity-70"
+          >
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/smartlock/google.svg" className="w-5 h-5" alt="Google" />
+            Google
+          </button>
         </div>
       </div>
       <Footer />
