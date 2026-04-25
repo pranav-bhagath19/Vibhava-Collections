@@ -11,6 +11,8 @@ import { db } from '@/lib/firebase';
 import { Order } from '@/types';
 import TrackingTimeline from '@/components/orders/TrackingTimeline';
 import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
+import Link from 'next/link';
+import { Address } from '@/types';
 
 export default function ProfilePage() {
   const { user, logout, isLoading: isAuthLoading } = useAuth();
@@ -25,7 +27,7 @@ export default function ProfilePage() {
     try {
       const { doc, setDoc } = await import('firebase/firestore');
       const userRef = doc(db, 'users', user.id);
-      const updatedAddresses = (user.savedAddresses || []).filter(a => a.id !== addressId);
+      const updatedAddresses = (user.savedAddresses || []).filter((a: Address) => a.id !== addressId);
       
       await setDoc(userRef, {
         savedAddresses: updatedAddresses

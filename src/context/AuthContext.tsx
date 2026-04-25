@@ -12,12 +12,7 @@ import {
 import { auth, db, googleProvider } from '@/lib/firebase';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  photoURL?: string;
-}
+import { User } from '@/types';
 
 interface AuthContextType {
   user: User | null;
