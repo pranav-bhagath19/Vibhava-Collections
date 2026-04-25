@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import ProductCard from '@/components/product/ProductCard';
-import { products } from '@/data/mockData';
+
 import { SlidersHorizontal, ShieldCheck, ChevronDown, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProductSkeleton } from '@/components/ui/Skeleton';

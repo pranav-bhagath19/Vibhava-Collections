@@ -7,11 +7,12 @@ export interface Product {
   fabric: string;
   color: string;
   images: string[];
-  image?: string; // Fallback for some legacy data
+  image?: string;
   rating: number;
   reviews: number;
   trending?: boolean;
   description: string;
+  occasion?: string;
 }
 
 export interface OrderItem {

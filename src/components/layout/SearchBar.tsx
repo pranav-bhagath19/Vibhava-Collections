@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { products } from '@/data/mockData';
+import { useAppContext } from '@/context/AppContext';
 
 interface SearchBarProps {
   isOpen: boolean;
@@ -12,6 +12,7 @@ interface SearchBarProps {
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({ isOpen, onClose }) => {
+  const { products } = useAppContext();
   const [query, setQuery] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
 

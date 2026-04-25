@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Heart, ShoppingBag, Star, CheckCircle2 } from 'lucide-react';
-import { Product } from '@/data/mockData';
+import { Product } from '@/types';
 import { useAppContext } from '@/context/AppContext';
 import { motion } from 'framer-motion';
 

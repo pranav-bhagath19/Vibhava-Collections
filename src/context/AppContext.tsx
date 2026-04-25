@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Product } from '@/data/mockData';
+import { Product } from '@/types';
 import { db } from '@/lib/firebase';
 import { 
   collection, 

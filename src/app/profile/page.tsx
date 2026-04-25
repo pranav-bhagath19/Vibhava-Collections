@@ -10,7 +10,7 @@ import { useAppContext } from '@/context/AppContext';
 import { db } from '@/lib/firebase';
 import { Order } from '@/types';
 import TrackingTimeline from '@/components/orders/TrackingTimeline';
-import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import Link from 'next/link';
 import { Address } from '@/types';
 

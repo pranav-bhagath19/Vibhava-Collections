@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { useAppContext } from '@/context/AppContext';
-import { CheckCircle2, ArrowRight, ShieldCheck, Truck, RefreshCw } from 'lucide-react';
+import { CheckCircle2, ArrowRight, ShieldCheck, Truck, RefreshCw, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '@/lib/firebase';
@@ -15,6 +15,7 @@ export default function CheckoutPage() {
   const { user } = useAuth();
   const { cart, cartTotal, showToast, clearCart } = useAppContext();
   const [isOrdered, setIsOrdered] = useState(false);
+  const [placedOrderId, setPlacedOrderId] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [saveAddress, setSaveAddress] = useState(true);
@@ -129,6 +130,7 @@ export default function CheckoutPage() {
         console.log("📍 Address saved to profile.");
       }
 
+      setPlacedOrderId(orderId);
       setIsOrdered(true);
       showToast('Order placed successfully!', 'success');
     } catch (error) {
@@ -151,14 +153,17 @@ export default function CheckoutPage() {
             </div>
             <h1 className="text-3xl font-bold text-luxury mb-4 italic">Order Confirmed!</h1>
             <p className="text-gray-500 mb-8 font-light leading-relaxed">
-              Thank you for shopping with Vibhava Collections. Your order <span className="text-primary font-bold">#VB-{Math.floor(Math.random() * 90000) + 10000}</span> has been placed and is being prepared for shipment.
+              Thank you for shopping with Vibhava Collections. Your order <span className="text-primary font-bold">#{placedOrderId}</span> has been placed and is being prepared for shipment.
             </p>
-            <Link 
-              href="/shop"
-              className="btn-primary w-full"
-            >
-              Continue Shopping
-            </Link>
+            <div className="flex flex-col gap-4">
+              <Link href={`/orders/${placedOrderId}`} className="btn-primary w-full">
+                Track My Order
+                <ArrowRight size={16} />
+              </Link>
+              <Link href="/shop" className="btn-outline w-full">
+                Continue Shopping
+              </Link>
+            </div>
           </div>
         </div>
         <Footer />

@@ -4,7 +4,6 @@ import React from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { useAppContext } from '@/context/AppContext';
-import { products } from '@/data/mockData';
 import ProductCard from '@/components/product/ProductCard';
 import Link from 'next/link';
 import EmptyState from '@/components/ui/EmptyState';
