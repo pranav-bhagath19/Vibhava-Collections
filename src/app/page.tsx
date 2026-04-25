@@ -1,18 +1,23 @@
+'use client';
+
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import Hero from '@/components/home/Hero';
 import CategorySection from '@/components/home/CategorySection';
 import Testimonials from '@/components/home/Testimonials';
 import ProductCard from '@/components/product/ProductCard';
-import { products } from '@/data/mockData';
+import { useAppContext } from '@/context/AppContext';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
+import { ProductSkeleton } from '@/components/ui/Skeleton';
 
 
 // Vibhava Collections - Luxury Heritage Experience
 export default function Home() {
+  const { products, isLoadingProducts } = useAppContext();
   const trendingProducts = products.filter(p => p.trending).slice(0, 4);
+  const featuredProducts = products.slice(0, 4);
 
   return (
     <main className="min-h-screen bg-cream">
@@ -39,9 +44,13 @@ export default function Home() {
         </header>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
-          {products.slice(0, 4).map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+          {isLoadingProducts ? (
+            [1, 2, 3, 4].map(i => <ProductSkeleton key={i} />)
+          ) : (
+            featuredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))
+          )}
         </div>
       </section>
 
@@ -79,9 +88,13 @@ export default function Home() {
           <h2 className="section-heading italic">Trending Now</h2>
         </header>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-12">
-          {trendingProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+          {isLoadingProducts ? (
+            [1, 2, 3, 4].map(i => <ProductSkeleton key={i} />)
+          ) : (
+            trendingProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))
+          )}
         </div>
       </section>
 

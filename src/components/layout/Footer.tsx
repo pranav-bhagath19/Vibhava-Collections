@@ -84,7 +84,7 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
+        <div className="pt-12 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-8">
           <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold text-center md:text-left">
             © 2024 Vibhava Collections. Handcrafted for the modern connoisseur.
           </p>

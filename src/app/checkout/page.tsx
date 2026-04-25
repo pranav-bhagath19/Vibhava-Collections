@@ -7,6 +7,9 @@ import { useAppContext } from '@/context/AppContext';
 import { CheckCircle2, ArrowRight, ShieldCheck, Truck, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { db } from '@/lib/firebase';
+import { doc, setDoc, arrayUnion } from 'firebase/firestore';
+import { useAuth } from '@/context/AuthContext';
 
 export default function CheckoutPage() {
   const { cart, cartTotal, showToast } = useAppContext();
@@ -16,13 +19,18 @@ export default function CheckoutPage() {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    email: '',
+    email: user?.email || '',
     address: '',
     city: '',
     pin: '',
     phone: '',
     paymentMethod: 'cod'
   });
+
+  // Sync email when user changes
+  useEffect(() => {
+    if (user?.email) setFormData(prev => ({ ...prev, email: user.email }));
+  }, [user]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -44,13 +52,51 @@ export default function CheckoutPage() {
 
   const prevStep = () => setCurrentStep(prev => prev - 1);
 
+  const { clearCart } = useAppContext();
   const handleOrder = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!user) {
+      showToast('Please sign in to place an order', 'info');
+      return;
+    }
+
     setIsLoading(true);
-    await new Promise(r => setTimeout(r, 2000));
-    setIsOrdered(true);
-    showToast('Order placed successfully!');
-    setIsLoading(false);
+    try {
+      const orderId = `VB-${Math.floor(Math.random() * 90000) + 10000}`;
+      const orderData = {
+        orderId,
+        userId: user.id,
+        userName: `${formData.firstName} ${formData.lastName}`,
+        email: formData.email,
+        phone: formData.phone,
+        address: `${formData.address}, ${formData.city} - ${formData.pin}`,
+        items: cart.map(item => ({
+          id: item.id,
+          name: item.name,
+          price: item.discountPrice || item.price,
+          quantity: item.quantity,
+          image: item.images[0]
+        })),
+        total: cartTotal,
+        status: 'placed',
+        createdAt: new Date().toISOString() // Using string for simple cross-reference, but real-time listeners work with it
+      };
+
+      // 1. Save to global orders collection
+      await setDoc(doc(db, 'orders', orderId), orderData);
+
+      // 2. Clear cart in Firestore
+      await clearCart();
+
+      setIsOrdered(true);
+      showToast('Order placed successfully!', 'success');
+    } catch (error) {
+      console.error('Order error:', error);
+      showToast('Failed to place order. Please try again.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (isOrdered) {

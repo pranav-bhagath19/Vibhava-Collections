@@ -8,18 +8,13 @@ import { products } from '@/data/mockData';
 import { SlidersHorizontal, ShieldCheck, ChevronDown, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ProductSkeleton } from '@/components/ui/Skeleton';
+import { useAppContext } from '@/context/AppContext';
 
 export default function ShopPage() {
+  const { products, isLoadingProducts } = useAppContext();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [sortBy, setSortBy] = useState<string>('featured');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    setIsLoading(true);
-    const timer = setTimeout(() => setIsLoading(false), 800);
-    return () => clearTimeout(timer);
-  }, [selectedCategory, sortBy]);
 
   const activeFiltersCount = (selectedCategory !== 'all' ? 1 : 0) + (sortBy !== 'featured' ? 1 : 0);
 
@@ -229,10 +224,10 @@ export default function ShopPage() {
           {/* Product Grid */}
           <div className="flex-1">
             <div className="mb-8 flex justify-between items-center">
-              <p className="text-sm text-gray-400">Showing <span className="font-bold text-gray-800">{isLoading ? '...' : filteredProducts.length}</span> exquisite pieces</p>
+              <p className="text-sm text-gray-400">Showing <span className="font-bold text-gray-800">{isLoadingProducts ? '...' : filteredProducts.length}</span> exquisite pieces</p>
             </div>
 
-            {isLoading ? (
+            {isLoadingProducts ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-10 md:gap-12">
                 {[1, 2, 3, 4, 5, 6].map(i => <ProductSkeleton key={i} />)}
               </div>

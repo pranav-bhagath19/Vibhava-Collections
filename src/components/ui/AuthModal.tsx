@@ -8,9 +8,10 @@ import { useAuth } from '@/context/AuthContext';
 
 const AuthModal = () => {
   const { isAuthModalOpen, setAuthModalOpen, showToast } = useAppContext();
-  const { login, signup } = useAuth();
+  const { login, signup, loginWithGoogle } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
 
   if (!isAuthModalOpen) return null;
@@ -18,18 +19,33 @@ const AuthModal = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError('');
     
     try {
       if (isLogin) {
         await login(formData.email, formData.password);
-        showToast('Welcome back to Vibhava!');
+        showToast('Welcome back to Vibhava!', 'success');
       } else {
         await signup(formData.name, formData.email, formData.password);
-        showToast('Account created successfully!');
+        showToast('Account created successfully!', 'success');
       }
       setAuthModalOpen(false);
-    } catch (err) {
-      showToast('Authentication failed. Please check your credentials.', 'error');
+    } catch (err: any) {
+      setError(err.message || 'Authentication failed. Please check your credentials.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+      await loginWithGoogle();
+      showToast('Successfully signed in with Google', 'success');
+      setAuthModalOpen(false);
+    } catch (err: any) {
+      setError(err.message || 'Google sign-in failed');
     } finally {
       setIsLoading(false);
     }
@@ -64,10 +80,16 @@ const AuthModal = () => {
               <span className="text-[10px] uppercase tracking-[0.4em] text-secondary font-bold mb-3 block">
                 {isLogin ? 'Welcome Back' : 'Join the Legacy'}
               </span>
-              <h2 className="text-3xl font-bold text-luxury">
+              <h2 className="text-3xl font-bold text-luxury italic">
                 {isLogin ? 'Sign In' : 'Create Account'}
               </h2>
             </header>
+
+            {error && (
+              <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 text-red-700 text-xs font-bold uppercase tracking-widest">
+                {error}
+              </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               {!isLogin && (
@@ -117,14 +139,6 @@ const AuthModal = () => {
                 </div>
               </div>
 
-              {isLogin && (
-                <div className="text-right">
-                  <button type="button" className="text-[10px] uppercase tracking-widest text-gray-400 font-bold hover:text-primary">
-                    Forgot Password?
-                  </button>
-                </div>
-              )}
-
               <button 
                 disabled={isLoading}
                 className="btn-primary w-full py-5 disabled:opacity-50"
@@ -139,6 +153,23 @@ const AuthModal = () => {
                 )}
               </button>
             </form>
+
+            <div className="relative flex items-center justify-center my-10">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-100"></div>
+              </div>
+              <span className="relative px-4 bg-white text-[9px] uppercase tracking-[0.3em] font-bold text-gray-300">Or Continue With</span>
+            </div>
+
+            <button 
+              type="button"
+              onClick={handleGoogleLogin}
+              disabled={isLoading}
+              className="w-full flex items-center justify-center gap-4 py-4 px-6 bg-white border border-gray-100 rounded-lg hover:bg-gray-50 transition-all group"
+            >
+              <img src="/assets/icons/google.svg" alt="Google" className="w-5 h-5 grayscale group-hover:grayscale-0 transition-all" />
+              <span className="text-[10px] uppercase tracking-widest font-bold text-gray-600">Google Account</span>
+            </button>
 
             <footer className="mt-10 text-center">
               <p className="text-sm text-gray-500 font-light">

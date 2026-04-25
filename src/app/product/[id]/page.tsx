@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import { products } from '@/data/mockData';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import { Heart, ShoppingBag, Star, Share2, ShieldCheck, Truck, RefreshCw, Loader2 } from 'lucide-react';
@@ -16,13 +15,28 @@ import ProductCard from '@/components/product/ProductCard';
 export default function ProductPage() {
   const params = useParams();
   const { id } = params;
+  const { products, isLoadingProducts, addToCart, toggleWishlist, isWishlisted, setSizeGuideOpen } = useAppContext();
   const product = products.find(p => p.id === id);
-  const { addToCart, toggleWishlist, isWishlisted, setSizeGuideOpen } = useAppContext();
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedOption, setSelectedOption] = useState('Unstitched');
   const [isAdding, setIsAdding] = useState(false);
 
-  if (!product) return <div>Product not found</div>;
+  if (isLoadingProducts) {
+    return (
+      <main className="min-h-screen bg-cream pt-32 md:pt-40 flex items-center justify-center">
+        <Loader2 className="animate-spin text-primary" size={48} />
+      </main>
+    );
+  }
+
+  if (!product) return (
+    <main className="min-h-screen bg-cream pt-32 md:pt-40 flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold text-luxury mb-4">Piece Not Found</h1>
+        <p className="text-gray-500 italic">The exquisite piece you are looking for is no longer available.</p>
+      </div>
+    </main>
+  );
 
   return (
     <main className="min-h-screen bg-cream pt-32 md:pt-40">

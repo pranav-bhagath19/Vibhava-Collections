@@ -10,7 +10,7 @@ import Link from 'next/link';
 import EmptyState from '@/components/ui/EmptyState';
 
 export default function WishlistPage() {
-  const { wishlist } = useAppContext();
+  const { wishlist, products } = useAppContext();
   const wishlistedProducts = products.filter(p => wishlist.includes(p.id));
 
   return (
