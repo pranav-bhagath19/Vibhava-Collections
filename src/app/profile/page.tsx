@@ -11,6 +11,7 @@ import { db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 
 interface Order {
+  id?: string;
   orderId: string;
   total: number;
   status: string;
@@ -40,10 +41,13 @@ export default function ProfilePage() {
       );
       
       const unsubscribe = onSnapshot(q, (snapshot) => {
-        const ordersData = snapshot.docs.map(doc => ({
-          ...doc.data(),
-          id: doc.id
-        }) as Order);
+        const ordersData = snapshot.docs.map(doc => {
+          const data = doc.data() as Order;
+          return {
+            ...data,
+            id: doc.id
+          };
+        });
         setOrders(ordersData);
         setIsLoadingOrders(false);
       }, (error) => {
