@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { User, Package, Heart, LogOut, ChevronRight, Loader2 } from 'lucide-react';
 import { useAppContext } from '@/context/AppContext';
 import { db } from '@/lib/firebase';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 
 interface Order {
   orderId: string;
