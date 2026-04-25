@@ -37,10 +37,10 @@ export default function ProfilePage() {
       console.log(`🔍 Fetching orders for: ${user.email} (ID: ${user.id})`);
       
       // We use email as the primary key for "Grouping by Gmail"
+      // Removed orderBy from query to avoid immediate index requirement
       const q = query(
         collection(db, 'orders'),
-        where('email', '==', user.email),
-        orderBy('createdAt', 'desc')
+        where('email', '==', user.email)
       );
       
       const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -52,13 +52,16 @@ export default function ProfilePage() {
             id: doc.id
           };
         });
+        
+        // Sort in-memory by createdAt (descending)
+        ordersData.sort((a, b) => {
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+
         setOrders(ordersData);
         setIsLoadingOrders(false);
       }, (error) => {
         console.error('❌ Order listener error:', error);
-        if (error.message.includes('index')) {
-          console.warn('⚠️ MISSING INDEX: You need to create a Firestore index for "orders" (email: ASC, createdAt: DESC). Check the link in the error message above.');
-        }
         setIsLoadingOrders(false);
       });
 
