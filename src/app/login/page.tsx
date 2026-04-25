@@ -18,10 +18,12 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = await login(email, password);
-    if (success) {
-      showToast('Welcome back to Vibhava!');
+    try {
+      await login(email, password);
+      showToast('Welcome back to Vibhava!', 'success');
       router.push('/profile');
+    } catch (error: any) {
+      showToast(error.message || 'Authentication failed. Please check your credentials.', 'error');
     }
   };
 
